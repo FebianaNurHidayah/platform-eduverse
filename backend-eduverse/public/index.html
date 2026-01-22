@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="id" style="height: 100%;">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eduverse - Explore the Universe of Knowledge</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&amp;display=swap" rel="stylesheet">
+ <link rel="stylesheet" href="web.css">
+
+
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body><!-- Login Modal -->
+  <div id="loginModal" class="modal">
+   <div class="modal-content">
+    <h2 class="modal-title">🚀 Masuk ke Eduverse</h2>
+    <form id="loginForm">
+     <div class="form-group"><label class="form-label" for="loginEmail">Email atau No. Telepon</label> <input type="text" id="loginEmail" class="form-input" placeholder="Masukkan email atau nomor telepon" required>
+     </div>
+     <div class="form-group"><label class="form-label" for="loginPassword">Password</label> <input type="password" id="loginPassword" class="form-input" placeholder="Masukkan password Anda" required>
+     </div>
+     <div class="modal-buttons"><button type="submit" class="control-btn btn-primary" style="flex: 1;">Masuk</button> <button type="button" class="control-btn btn-secondary" onclick="closeModal()">Batal</button>
+     </div>
+     <div style="text-align: center; margin-top: 1rem;"><span style="color: rgba(255,255,255,0.7);">Belum punya akun? </span> <button type="button" style="background: none; border: none; color: #4ecdc4; text-decoration: underline; cursor: pointer; font-family: inherit;" onclick="switchToSignup()">Daftar di sini</button>
+     </div>
+    </form>
+   </div>
+  </div><!-- Signup Modal -->
+  <div id="signupModal" class="modal">
+   <div class="modal-content">
+    <h2 class="modal-title">✨ Daftar ke Eduverse</h2>
+    <form id="signupForm">
+     <div class="form-group"><label class="form-label" for="signupName">Nama Lengkap</label> <input type="text" id="signupName" class="form-input" placeholder="Masukkan nama lengkap Anda" required>
+     </div>
+     <div class="form-group"><label class="form-label" for="signupEmail">Email atau No. Telepon</label> <input type="text" id="signupEmail" class="form-input" placeholder="Masukkan email atau nomor telepon" required>
+     </div>
+     <div class="form-group"><label class="form-label" for="signupPassword">Password</label> <input type="password" id="signupPassword" class="form-input" placeholder="Buat password (min. 6 karakter)" required minlength="6">
+     </div>
+     <div class="form-group"><label class="form-label" for="confirmPassword">Konfirmasi Password</label> <input type="password" id="confirmPassword" class="form-input" placeholder="Ulangi password Anda" required>
+     </div>
+     <div class="modal-buttons"><button type="submit" class="control-btn btn-primary" style="flex: 1;">Daftar</button> <button type="button" class="control-btn btn-secondary" onclick="closeModal()">Batal</button>
+     </div>
+     <div style="text-align: center; margin-top: 1rem;"><span style="color: rgba(255,255,255,0.7);">Sudah punya akun? </span> <button type="button" style="background: none; border: none; color: #4ecdc4; text-decoration: underline; cursor: pointer; font-family: inherit;" onclick="switchToLogin()">Masuk di sini</button>
+     </div>
+    </form>
+   </div>
+  </div><!-- Navbar -->
+  <nav class="navbar">
+   <div class="logo"><span class="rocket-icon">🚀</span> <span>Eduverse</span>
+   </div>
+   <div class="nav-center">
+    <div class="search-box"><span class="search-icon">🔍</span> <input type="text" class="search-input" placeholder="Cari konten pembelajaran..." id="searchInput">
+    </div>
+   </div>
+   <div class="nav-icons">
+    <div class="desktop-nav-buttons"><button class="nav-icon" onclick="showHome()" title="Home">🏠</button> <button class="nav-icon" onclick="showLeaderboard()" title="Leaderboard">🏆</button> <button class="nav-icon" onclick="showComments()" title="Komentar">💭</button>
+    </div>
+    <div class="auth-container" id="authContainer">
+     <div class="auth-buttons"><button class="auth-btn" onclick="showLoginModal()">Masuk</button> <button class="auth-btn signup" onclick="showSignupModal()">Daftar</button>
+     </div>
+    </div>
+    <div class="user-info" id="userInfo" style="display: none;"><span class="user-welcome" id="userWelcome">👋 Halo, User!</span>
+     <div class="stars-display"><span class="star-icon">⭐</span> <span class="stars-count" id="userStars">0</span>
+     </div>
+    </div>
+   </div>
+   <div class="settings-menu-container"><button class="nav-icon settings-btn" onclick="showMenu()" title="Pengaturan">☰</button>
+   </div>
+  </nav>
+  <div class="container"><!-- Home Page -->
+   <div id="homePage"><!-- Hero Section -->
+    <section class="hero-section">
+     <h1 class="hero-title" id="heroTitle">Explore the Universe of Knowledge!</h1>
+     <p class="hero-description" id="heroDescription">Do the Quiz to exercise your brain with the category available and collect the stars to buy items.</p>
+    </section><!-- Search Results -->
+    <div id="searchResults" class="search-results">
+     <h3>🔍 Hasil Pencarian</h3>
+     <div id="searchResultsList"></div>
+    </div><!-- Daily Challenges -->
+    <section class="daily-challenges">
+     <h2 class="challenges-title" id="challengesTitle">Daily Challenges</h2>
+     <div class="challenges-grid" id="challengesGrid">
+     </div>
+    </section><!-- Selected Class Info -->
+    <div id="selectedClassInfo" class="selected-class-info">
+     <h3 id="selectedClassName">Kelas yang Dipilih: -</h3>
+     <p>Anda dapat mengubah kelas kapan saja</p><button class="change-class-btn" onclick="showClassSelection()">Ubah Kelas</button>
+    </div><!-- Popular Section -->
+    <section id="popularSection" class="popular-section" style="display: none;">
+     <div class="section-header">
+      <h2 class="section-title">🔥 Popular Quizzes</h2><button class="scroll-btn" onclick="scrollCards('popularCards', 'right')"> <span style="font-size: 1.5rem;">›</span> </button>
+     </div>
+     <div class="cards-container" id="popularCards">
+      <div class="quiz-card" onclick="startQuizFromCard('math', 'aljabar')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         📊
+        </div>
+        <h3 class="card-title">Algebra Basics</h3>
+        <p class="card-subject">Mathematics</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('english', 'tenses')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         🌍
+        </div>
+        <h3 class="card-title">English Tenses</h3>
+        <p class="card-subject">English</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('indonesian', 'teks_deskripsi')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         🇮🇩
+        </div>
+        <h3 class="card-title">Teks Deskripsi</h3>
+        <p class="card-subject">Bahasa Indonesia</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('math', 'trigonometri')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         📐
+        </div>
+        <h3 class="card-title">Trigonometry</h3>
+        <p class="card-subject">Mathematics</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('english', 'vocabulary')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         📖
+        </div>
+        <h3 class="card-title">Vocabulary Builder</h3>
+        <p class="card-subject">English</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('indonesian', 'puisi')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         ✨
+        </div>
+        <h3 class="card-title">Puisi Modern</h3>
+        <p class="card-subject">Bahasa Indonesia</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('math', 'geometri')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         📏
+        </div>
+        <h3 class="card-title">Geometry Shapes</h3>
+        <p class="card-subject">Mathematics</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('english', 'grammar')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         ✍️
+        </div>
+        <h3 class="card-title">Grammar Basics</h3>
+        <p class="card-subject">English</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('indonesian', 'teks_laporan')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         📝
+        </div>
+        <h3 class="card-title">Teks Laporan</h3>
+        <p class="card-subject">Bahasa Indonesia</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('math', 'statistika')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         📈
+        </div>
+        <h3 class="card-title">Statistics Basics</h3>
+        <p class="card-subject">Mathematics</p>
+       </div>
+      </div>
+     </div>
+    </section><!-- Recommend Section -->
+    <section id="recommendSection" class="recommend-section" style="display: none;">
+     <div class="section-header">
+      <h2 class="section-title">✨ Recommended For You</h2><button class="scroll-btn" onclick="scrollCards('recommendCards', 'right')"> <span style="font-size: 1.5rem;">›</span> </button>
+     </div>
+     <div class="cards-container" id="recommendCards">
+      <div class="quiz-card" onclick="startQuizFromCard('indonesian', 'teks_anekdot')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         😄
+        </div>
+        <h3 class="card-title">Teks Anekdot</h3>
+        <p class="card-subject">Bahasa Indonesia</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('english', 'reading')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         📚
+        </div>
+        <h3 class="card-title">Reading Skills</h3>
+        <p class="card-subject">English</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('math', 'limit')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         ∞
+        </div>
+        <h3 class="card-title">Limit Functions</h3>
+        <p class="card-subject">Mathematics</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('indonesian', 'teks_eksposisi')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         📰
+        </div>
+        <h3 class="card-title">Teks Eksposisi</h3>
+        <p class="card-subject">Bahasa Indonesia</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('english', 'passive_voice')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         🔄
+        </div>
+        <h3 class="card-title">Passive Voice</h3>
+        <p class="card-subject">English</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('math', 'turunan')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         📈
+        </div>
+        <h3 class="card-title">Derivatives</h3>
+        <p class="card-subject">Mathematics</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('indonesian', 'hikayat')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         📜
+        </div>
+        <h3 class="card-title">Hikayat Klasik</h3>
+        <p class="card-subject">Bahasa Indonesia</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('english', 'conditional')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         ❓
+        </div>
+        <h3 class="card-title">Conditional Sentences</h3>
+        <p class="card-subject">English</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('math', 'integral')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         ∫
+        </div>
+        <h3 class="card-title">Integral Calculus</h3>
+        <p class="card-subject">Mathematics</p>
+       </div>
+      </div>
+      <div class="quiz-card" onclick="startQuizFromCard('indonesian', 'cerpen')">
+       <div class="card-glow"></div>
+       <div class="card-content">
+        <div class="card-icon">
+         📚
+        </div>
+        <h3 class="card-title">Analisis Cerpen</h3>
+        <p class="card-subject">Bahasa Indonesia</p>
+       </div>
+      </div>
+     </div>
+    </section><!-- Class Selection -->
+    <section id="classSelectionSection" class="class-selection-section">
+     <h2 class="categories-title">Pilih Kelas Anda</h2>
+     <div class="class-grid">
+      <div class="class-card" id="class1Card">
+       <div class="class-icon">
+        🎓
+       </div>
+       <h3 class="class-title">Kelas X</h3>
+       <p>SMA/SMK/MA Kelas 10</p>
+       <p class="class-description">Materi dasar untuk siswa kelas 1</p><button class="class-btn btn-class1" onclick="selectClass('kelas1')">Pilih Kelas</button>
+      </div>
+      <div class="class-card" id="class2Card">
+       <div class="class-icon">
+        📚
+       </div>
+       <h3 class="class-title">Kelas XI</h3>
+       <p>SMA/SMK/MA Kelas 11</p>
+       <p class="class-description">Materi menengah untuk siswa kelas 2</p><button class="class-btn btn-class2" onclick="selectClass('kelas2')">Pilih Kelas</button>
+      </div>
+      <div class="class-card" id="class3Card">
+       <div class="class-icon">
+        🏆
+       </div>
+       <h3 class="class-title">Kelas XII</h3>
+       <p>SMA/SMK/MA Kelas 12</p>
+       <p class="class-description">Materi lanjutan untuk siswa kelas 3</p><button class="class-btn btn-class3" onclick="selectClass('kelas3')">Pilih Kelas</button>
+      </div>
+     </div>
+    </section><!-- Categories -->
+    <section id="categoriesSection" class="categories-section" style="display: none;">
+     <h2 class="categories-title">Pilih Mata Pelajaran</h2>
+     <div class="categories-grid">
+      <div class="category-card">
+       <div class="category-icon">
+        📊
+       </div>
+       <h3 class="category-title">Matematika</h3>
+       <p>Latih kemampuan matematika dengan soal-soal menarik</p><button class="category-btn btn-math" onclick="showTopics('math')">Pilih Topik</button>
+      </div>
+      <div class="category-card">
+       <div class="category-icon">
+        🌍
+       </div>
+       <h3 class="category-title">Bahasa Inggris</h3>
+       <p>Tingkatkan kemampuan bahasa Inggris Anda</p><button class="category-btn btn-english" onclick="showTopics('english')">Pilih Topik</button>
+      </div>
+      <div class="category-card">
+       <div class="category-icon">
+        🇮🇩
+       </div>
+       <h3 class="category-title">Bahasa Indonesia</h3>
+       <p>Pelajari lebih dalam tentang bahasa Indonesia</p><button class="category-btn btn-indonesian" onclick="showTopics('indonesian')">Pilih Topik</button>
+      </div>
+     </div>
+    </section><!-- Topics Selection -->
+    <section id="topicsSection" class="categories-section" style="display: none;">
+     <div style="text-align: center; margin-bottom: 2rem;"><button class="control-btn btn-secondary" onclick="backToCategories()" style="display: inline-block;">← Kembali ke Mata Pelajaran</button>
+     </div>
+     <h2 class="categories-title" id="topicsTitle">Pilih Topik</h2>
+     <div class="categories-grid" id="topicsGrid">
+     </div>
+    </section>
+   </div><!-- Quiz Page -->
+   <div id="quizPage" class="quiz-container">
+    <div class="quiz-header">
+     <h1 class="quiz-title" id="quizTitle">Quiz Matematika</h1>
+     <div class="quiz-info" style="margin-bottom: 1rem;"><span id="quizClassInfo" style="background: rgba(78, 205, 196, 0.2); padding: 0.5rem 1rem; border-radius: 15px; font-size: 0.9rem;">Kelas X</span>
+     </div>
+     <div class="quiz-progress">
+      <div class="quiz-progress-bar" id="progressBar"></div>
+     </div>
+     <p>Soal <span id="currentQuestion">1</span> dari <span id="totalQuestions">10</span></p>
+    </div>
+    <div class="question-card">
+     <h2 class="question-text" id="questionText">Loading...</h2>
+     <div class="answers-grid" id="answersGrid">
+     </div>
+    </div>
+    <div class="quiz-controls"><button class="control-btn btn-secondary" onclick="showHome()">Kembali</button> <button class="control-btn btn-primary" id="nextBtn" onclick="nextQuestion()">Selanjutnya</button>
+    </div>
+   </div><!-- Results Page -->
+   <div id="resultsPage" class="results-container">
+    <h1 class="results-title">🎉 Quiz Selesai!</h1>
+    <div class="results-score" id="finalScore">
+     8/10
+    </div>
+    <div class="results-stars" id="earnedStars">
+     ⭐ +80 Stars Earned!
+    </div>
+    <p style="margin-bottom: 2rem;">Selamat! Anda telah menyelesaikan quiz dengan baik.</p>
+    <div class="quiz-controls" style="margin-bottom: 2rem;"><button class="control-btn btn-primary" onclick="showAnswerReview()" id="reviewButton">📋 Review Jawaban</button>
+    </div>
+    <div id="answerReviewSection" style="display: none;">
+     <h2 style="color: #4ecdc4; margin-bottom: 1.5rem; text-align: center;">📋 Review Jawaban Anda</h2>
+     <div id="answerReviewList"></div>
+    </div>
+    <div class="quiz-controls"><button class="control-btn btn-secondary" onclick="showHome()">Kembali ke Home</button> <button class="control-btn btn-primary" onclick="showLeaderboard()">Lihat Leaderboard</button>
+    </div>
+   </div><!-- Leaderboard Page -->
+   <div id="leaderboardPage" class="leaderboard-container">
+    <h1 class="leaderboard-title">🏆 Leaderboard</h1>
+    <div class="leaderboard-list" id="leaderboardList">
+    </div>
+    <div class="quiz-controls" style="margin-top: 2rem;"><button class="control-btn btn-secondary" onclick="showHome()">Kembali ke Home</button>
+    </div>
+   </div><!-- Comments Page -->
+   <div id="commentsPage" class="comments-container">
+    <h1 class="comments-title">💭 Komentar &amp; Diskusi</h1>
+    <div class="comment-form"><textarea id="commentTextarea" class="comment-textarea" placeholder="Tulis komentar Anda di sini..."></textarea>
+     <div class="quiz-controls" style="margin-top: 1rem;"><button class="control-btn btn-primary" onclick="postComment()">Kirim Komentar</button>
+     </div>
+    </div>
+    <div class="comments-list" id="commentsList">
+    </div>
+    <div class="quiz-controls" style="margin-top: 2rem;"><button class="control-btn btn-secondary" onclick="showHome()">Kembali ke Home</button>
+    </div>
+   </div>
+  </div><!-- Footer -->
+  <footer>
+   <div class="site-footer-bg">
+    <div class="site-footer">
+     <div class="footer-container">
+      <div class="footer-column">
+       <h3>Fitur</h3>
+       <ul>
+        <li>Sekolah</li>
+        <li>Eduverse for Business</li>
+        <li>Buat Quiz</li>
+       </ul>
+      </div>
+      <div class="footer-column">
+       <h3>Mata Pelajaran</h3>
+       <ul>
+        <li>Matematika</li>
+        <li>Bahasa Inggris</li>
+        <li>Bahasa Indonesia</li>
+       </ul>
+      </div>
+      <div class="footer-column">
+       <h3>Tentang</h3>
+       <ul>
+        <li>Tentang Eduverse</li>
+        <li>Eduverse Blog</li>
+        <li>Perangkat Media</li>
+        <li>Karir</li>
+       </ul>
+      </div>
+      <div class="footer-column">
+       <h3>Dukungan</h3>
+       <ul>
+        <li>FAQ</li>
+        <li>Bantuan &amp; Dukungan</li>
+        <li>Kebijakan Privasi</li>
+        <li>Ketentuan Layanan</li>
+        <li>Sumber Daya Guru</li>
+       </ul>
+      </div>
+     </div>
+     <div class="footer-bottom">
+      <p>© 2025 Eduverse Inc.</p>
+     </div>
+    </div>
+   </div>
+  </footer>
+ 
+
+<script src="web.js"></script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c027e8ca0e89d72',t:'MTc2ODc4NTQ2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

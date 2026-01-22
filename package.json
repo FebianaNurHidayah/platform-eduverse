@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "mongoose": "^9.1.4",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "nodemo": "^1.0.0"
+  }
+}
