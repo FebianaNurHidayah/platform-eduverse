@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
@@ -12,13 +13,35 @@ const app = express();
 
 // ⛔ JANGAN app.listen di Vercel
 
-// Database
-connectDB();
-
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Health check
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ message: 'Server berjalan' });
+});
+
+// ✅ Database connection middleware
+let isDBConnected = false;
+
+app.use(async (req, res, next) => {
+  if (!isDBConnected) {
+    try {
+      await connectDB();
+      isDBConnected = true;
+      console.log('Database connected successfully');
+    } catch (error) {
+      console.error('Database connection failed:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Database connection failed' 
+      });
+    }
+  }
+  next();
+});
 
 // Static files
 app.use(express.static(path.join(process.cwd(), "public")));
@@ -41,7 +64,10 @@ app.get('/api/courses/:id', async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) {
-      return res.status(404).json({ success: false, message: 'Tidak ditemukan' });
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Tidak ditemukan' 
+      });
     }
     res.json({ success: true, data: course });
   } catch (error) {
@@ -52,19 +78,23 @@ app.get('/api/courses/:id', async (req, res) => {
 app.post('/api/contact', async (req, res) => {
   try {
     const { name, email, message } = req.body;
+    
     if (!name || !email || !message) {
-      return res.status(400).json({ success: false, message: 'Lengkapi data' });
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Lengkapi data' 
+      });
     }
+    
     const contact = await Contact.create({ name, email, message });
-    res.json({ success: true, message: 'Pesan diterima', data: contact });
+    res.json({ 
+      success: true, 
+      message: 'Pesan diterima', 
+      data: contact 
+    });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
-});
-
-// Health check
-app.get('/healthz', (req, res) => {
-  res.status(200).json({ message: 'Server berjalan' });
 });
 
 // Frontend fallback
@@ -72,5 +102,5 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
 });
 
-// ⬅️ WAJIB
+// ⬅️ WAJIB untuk Vercel
 module.exports = app;

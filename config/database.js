@@ -1,26 +1,21 @@
 const mongoose = require('mongoose');
 
-const MONGODB_URI = process.env.MONGODB_URI;
+let isConnected = false;
 
-if (!MONGODB_URI) {
-  throw new Error('MONGODB_URI belum diset');
-}
+const connectDB = async () => {
+  if (isConnected) return;
 
-let cached = global.mongoose;
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
+  try {
+    const db = await mongoose.connect(process.env.MONGODB_URI, {
+      bufferCommands: false,
+    });
 
-async function connectDB() {
-  if (cached.conn) return cached.conn;
-
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI);
+    isConnected = db.connections[0].readyState;
+    console.log('✅ MongoDB Connected');
+  } catch (error) {
+    console.error('❌ MongoDB error:', error.message);
+    throw error;
   }
-
-  cached.conn = await cached.promise;
-  console.log('✅ MongoDB Connected');
-  return cached.conn;
-}
+};
 
 module.exports = connectDB;
