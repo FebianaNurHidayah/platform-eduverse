@@ -6,11 +6,11 @@
       "headers": [
         {
           "key": "Content-Type",
-          "value": "application/xml"
+          "value": "application/xml; charset=utf-8"
         },
         {
-          "key": "Cache-Control",
-          "value": "public, max-age=0, must-revalidate"
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
         }
       ]
     }
@@ -21,15 +21,11 @@
       "destination": "/sitemap.xml"
     },
     {
-      "source": "/robots.txt",
-      "destination": "/robots.txt"
-    },
-    {
       "source": "/(api|healthz)(.*)",
       "destination": "/api/index.js"
     },
     {
-      "source": "/((?!api|healthz|sitemap\\.xml|robots\\.txt|favicon\\.ico).*)",
+      "source": "/((?!sitemap\\.xml|robots\\.txt|favicon\\.ico).*)",
       "destination": "/api/index.js"
     }
   ]
