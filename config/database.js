@@ -1,26 +1,13 @@
 const mongoose = require('mongoose');
 
-// Simpan koneksi dalam cache agar tidak membuat koneksi baru setiap request
-let cachedConnection = null;
+let cached = global.mongoose;
+if (!cached) cached = global.mongoose = { conn: null };
 
 const connectDB = async () => {
-  if (cachedConnection) {
-    return cachedConnection;
-  }
+  if (cached.conn) return cached.conn;
 
-  if (!process.env.MONGODB_URI) {
-    throw new Error('MONGODB_URI tidak ditemukan di env');
-  }
-
-  try {
-    const db = await mongoose.connect(process.env.MONGODB_URI);
-    cachedConnection = db;
-    console.log('✅ MongoDB Connected');
-    return db;
-  } catch (error) {
-    console.error('❌ MongoDB error:', error.message);
-    throw error;
-  }
+  cached.conn = await mongoose.connect(process.env.MONGODB_URI);
+  return cached.conn;
 };
 
 module.exports = connectDB;
