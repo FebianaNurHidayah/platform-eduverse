@@ -7,6 +7,10 @@
         {
           "key": "Content-Type",
           "value": "application/xml"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
         }
       ]
     }
@@ -17,11 +21,15 @@
       "destination": "/sitemap.xml"
     },
     {
+      "source": "/robots.txt",
+      "destination": "/robots.txt"
+    },
+    {
       "source": "/(api|healthz)(.*)",
       "destination": "/api/index.js"
     },
     {
-      "source": "/((?!sitemap\\.xml|robots\\.txt|favicon\\.ico).*)",
+      "source": "/((?!api|healthz|sitemap\\.xml|robots\\.txt|favicon\\.ico).*)",
       "destination": "/api/index.js"
     }
   ]
