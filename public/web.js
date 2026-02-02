@@ -1598,3 +1598,29 @@
             initializeApp();
             initializeSearch();
         });
+
+        async function handleLogin(e) {
+  e.preventDefault();
+
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+
+  const res = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.message);
+    return;
+  }
+
+  currentUser = data.user.full_name;
+  localStorage.setItem('currentUser', currentUser);
+
+  closeLoginModal();
+  showHome();
+}
