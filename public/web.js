@@ -859,6 +859,23 @@ async function finishQuiz() {
     const totalQuestions = quizData.length;
     const starsEarned = correctAnswers * 10;
 
+async function submitQuizResult(score) {
+  await fetch('/api/quiz/submit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userId: currentUser._id,
+      fullName: currentUser.full_name,
+      classLevel: selectedClass,
+      quiz: currentQuiz,
+      score
+    })
+  });
+}
+
+submitQuizResult(finalScore);
+
+
     // Update user data di localStorage
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
@@ -1055,7 +1072,23 @@ function showLeaderboard() {
 // ========================================
 // FUNGSI LEADERBOARD REALTIME
 // ========================================
-        
+       
+async function loadLeaderboard() {
+  const res = await fetch('/api/leaderboard');
+  const data = await res.json();
+
+  const container = document.getElementById('leaderboardList');
+  container.innerHTML = '';
+
+  data.forEach((item, index) => {
+    container.innerHTML += `
+      <li>
+        #${index + 1} ${item.full_name} - ${item.score}
+      </li>
+    `;
+  });
+}
+
 function updateLeaderboard() {
     const leaderboardList = document.getElementById('leaderboardList');
     leaderboardList.innerHTML = '';
@@ -1119,7 +1152,22 @@ function showComments() {
     
     displayComments();
 }
-        
+
+async function submitComment(text) {
+  await fetch('/api/comments/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      userId: currentUser._id,
+      name: currentUser.full_name,
+      content: text,
+      quiz: currentQuiz
+    })
+  });
+
+  loadComments();
+}
+
 async function postComment() {
     if (!currentUser) return;
     
