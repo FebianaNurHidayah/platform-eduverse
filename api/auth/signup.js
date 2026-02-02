@@ -1,4 +1,5 @@
 import clientPromise from '../../lib/mongodb';
+import bcrypt from 'bcrypt';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -6,39 +7,54 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, email, phone, password } = req.body;
+    const { full_name, identifier, password, role } = req.body;
 
-    if (!name || (!email && !phone) || !password) {
+    // Validasi data
+    if (!full_name || !identifier || !password) {
       return res.status(400).json({ message: 'Data tidak lengkap' });
     }
 
     const client = await clientPromise;
     const db = client.db('haloeduverse');
 
+    // Cek apakah user sudah terdaftar berdasarkan identifier
     const existingUser = await db.collection('users').findOne({
-      $or: [
-        email ? { email } : null,
-        phone ? { phone } : null
-      ].filter(Boolean)
+      identifier: identifier
     });
 
     if (existingUser) {
       return res.status(409).json({ message: 'User sudah terdaftar' });
     }
 
-    await db.collection('users').insertOne({
-      name,
-      email: email || '',
-      phone: phone || '',
-      password, // plain dulu
+    // Hash password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Siapkan data user
+    const userData = {
+      full_name,
+      identifier, // Menyimpan email/phone dalam satu field
+      password: hashedPassword,
+      role: role || 'siswa', // Default role adalah siswa
       total_stars: 0,
       created_at: new Date()
+    };
+
+    // Simpan ke database
+    const result = await db.collection('users').insertOne(userData);
+
+    return res.status(201).json({ 
+      message: 'Signup berhasil',
+      user_id: result.insertedId,
+      role: userData.role,
+      full_name: userData.full_name
     });
 
-    return res.status(201).json({ message: 'Signup berhasil' });
-
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Server error' });
+    console.error('Signup error:', err);
+    return res.status(500).json({ 
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 }

@@ -391,14 +391,18 @@ function showNotification(message, type = 'info') {
 async function handleLogin(event) {
     event.preventDefault();
     
-    const emailInput = document.getElementById('loginEmail').value.trim();
+    // 1. Ambil data dari input UI
+    // Menggunakan nama variabel 'identifier' agar sesuai dengan logika database baru
+    const identifier = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value.trim();
     
-    if (!emailInput || !password) {
+    // 2. Validasi Input Sederhana
+    if (!identifier || !password) {
         showNotification('Silakan lengkapi semua field!', 'error');
         return;
     }
 
+    // 3. Efek Loading pada Tombol
     const submitBtn = event.target.querySelector('button[type="submit"]');
     submitBtn.classList.add('loading');
     submitBtn.disabled = true;
@@ -471,12 +475,14 @@ function getCurrentDateString() {
 async function handleSignup(event) {
     event.preventDefault();
     
+    // 1. Ambil data dari input UI
     const fullName = document.getElementById('signupName').value.trim();
-    const emailInput = document.getElementById('signupEmail').value.trim();
+    const identifier = document.getElementById('signupEmail').value.trim(); // Ini bisa Email atau No.HP
     const password = document.getElementById('signupPassword').value.trim();
     const confirmPassword = document.getElementById('confirmPassword').value.trim();
     
-    if (!fullName || !emailInput || !password || !confirmPassword) {
+    // 2. Validasi Input
+    if (!fullName || !identifier || !password || !confirmPassword) {
         showNotification('Silakan lengkapi semua field!', 'error');
         return;
     }
@@ -491,6 +497,7 @@ async function handleSignup(event) {
         return;
     }
 
+    // 3. Efek Loading pada Tombol
     const submitBtn = event.target.querySelector('button[type="submit"]');
     submitBtn.classList.add('loading');
     submitBtn.disabled = true;
