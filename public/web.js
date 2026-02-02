@@ -422,7 +422,7 @@ async function handleLogin(event) {
 
     // redirect
     setTimeout(() => {
-      window.location.href = '/dashboard.html';
+      window.location.href = '/';
     }, 800);
 
   } catch (err) {
