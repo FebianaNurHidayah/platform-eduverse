@@ -848,18 +848,29 @@ function nextQuestion() {
 }
 
 async function finishQuiz() {
-    let correctAnswers = 0;
-    quizData.forEach((question, index) => {
-        if (userAnswers[index] === question.correct) {
-            correctAnswers++;
-        }
-    });
+  let correctAnswers = 0;
 
-    const score = correctAnswers;
-    const totalQuestions = quizData.length;
-    const starsEarned = correctAnswers * 10;
+  quizData.forEach((question, index) => {
+    if (userAnswers[index] === question.correct) {
+      correctAnswers++;
+    }
+  });
 
-async function submitQuizResult(score) {
+  const score = correctAnswers;
+  const totalQuestions = quizData.length;
+  const starsEarned = correctAnswers * 10;
+
+  await submitQuizResult({
+    score,
+    totalQuestions,
+    starsEarned
+  });
+
+  showResults(score, totalQuestions, starsEarned);
+}
+
+
+async function submitQuizResult({ score, totalQuestions, starsEarned }) {
   await fetch('/api/quiz/submit', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -871,41 +882,35 @@ async function submitQuizResult(score) {
       score
     })
   });
+
+  const savedUser = localStorage.getItem('currentUser');
+  if (!savedUser) return;
+
+  const userData = JSON.parse(savedUser);
+  userData.total_stars = (userData.total_stars || 0) + starsEarned;
+
+  userData.quiz_history = userData.quiz_history || [];
+  userData.quiz_history.push({
+    category: currentQuiz,
+    class: selectedClass,
+    score,
+    total: totalQuestions,
+    stars: starsEarned,
+    date: new Date().toISOString()
+  });
+
+  localStorage.setItem('currentUser', JSON.stringify(userData));
 }
 
-submitQuizResult(finalScore);
+async function syncLeaderboard(userData) {
+  const sdkUser = allUsers.find(u => u._id === userData._id);
+  if (!sdkUser) return;
 
-
-    // Update user data di localStorage
-    const savedUser = localStorage.getItem('currentUser');
-    if (savedUser) {
-        const userData = JSON.parse(savedUser);
-        userData.total_stars = (userData.total_stars || 0) + starsEarned;
-        
-        const quizHistory = userData.quiz_history || [];
-        quizHistory.push({
-            category: currentQuiz,
-            class: selectedClass,
-            score: score,
-            total: totalQuestions,
-            stars: starsEarned,
-            date: new Date().toISOString()
-        });
-        userData.quiz_history = quizHistory;
-
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        
-        // Juga update ke SDK untuk leaderboard
-        const sdkUser = allUsers.find(u => u.full_name === currentUser);
-        if (sdkUser) {
-            sdkUser.total_stars = userData.total_stars;
-            sdkUser.quiz_history = JSON.stringify(quizHistory);
-            await window.dataSdk.update(sdkUser);
-        }
-    }
-
-    showResults(score, totalQuestions, starsEarned);
+  sdkUser.total_stars = userData.total_stars;
+  sdkUser.quiz_history = JSON.stringify(userData.quiz_history);
+  await window.dataSdk.update(sdkUser);
 }
+
 
 function showResults(score, total, stars) {
     document.getElementById('homePage').style.display = 'none';
