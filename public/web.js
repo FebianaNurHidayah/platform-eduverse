@@ -730,6 +730,19 @@ function backToCategories() {
 // FUNGSI-FUNGSI QUIZ
 // ========================================
         
+function requireLogin() {
+  const isLoggedIn = localStorage.getItem('isLoggedIn');
+  const user = localStorage.getItem('currentUser');
+
+  if (isLoggedIn !== 'true' || !user) {
+    showLoginModal();
+    throw new Error('User not logged in');
+  }
+
+  currentUser = JSON.parse(user);
+}
+
+
 function startQuiz(category, topicId) {
     if (!currentUser) {
         showLoginModal();
@@ -1560,4 +1573,9 @@ window.addEventListener('DOMContentLoaded', () => {
     initializeAuthState();
     initializeApp();
     initializeSearch();
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  requireLogin();   // 🔥 INI PENTING
+  initializeQuiz();
 });
