@@ -1,20 +1,25 @@
 {
   "version": 2,
-  "routes": [
+  "rewrites": [
     {
-      "src": "/sitemap.xml",
-      "dest": "/api/sitemap",
-      "headers": {
-        "Cache-Control": "public, max-age=3600, s-maxage=3600"
-      }
+      "source": "/sitemap.xml",
+      "destination": "/api/sitemap"
     },
     {
-      "src": "/(api|healthz)(.*)",
-      "dest": "/api/index.js"
+      "source": "/api/auth/login",
+      "destination": "/api/auth/login.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "/api/index.js"
+      "source": "/api/auth/signup",
+      "destination": "/api/auth/signup.js"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/public/$1"
     }
   ]
 }
