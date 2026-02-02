@@ -418,7 +418,8 @@ async function handleLogin(event) {
     showNotification('Login berhasil!', 'success');
 
     // (opsional) simpan user ke localStorage
-    localStorage.setItem('user', JSON.stringify(data.user));
+   localStorage.setItem('isLoggedIn', 'true');
+   localStorage.setItem('currentUser', JSON.stringify(data.user));
 
     // redirect
     setTimeout(() => {
@@ -587,10 +588,10 @@ function showCategoriesSection() {
 }
 
 async function selectClass(classLevel) {
-    if (!currentUser) {
-        showLoginModal();
-        return;
-    }
+    if (!localStorage.getItem('isLoggedIn')) {
+  showLoginModal();
+  return;
+}
 
     selectedClass = classLevel;
     
@@ -1532,7 +1533,31 @@ document.getElementById('signupForm').addEventListener('submit', handleSignup);
 // INISIALISASI SAAT HALAMAN LOAD
 // ========================================
         
+function initializeAuthState() {
+  const isLoggedIn = localStorage.getItem('isLoggedIn');
+  const storedUser = localStorage.getItem('currentUser');
+
+  if (isLoggedIn === 'true' && storedUser) {
+    currentUser = JSON.parse(storedUser);
+    updateUIAfterLogin();
+  }
+}
+
+function updateUIAfterLogin() {
+  const authButtons = document.querySelector('.auth-buttons');
+  const userInfo = document.getElementById('userInfo');
+  const userWelcome = document.getElementById('userWelcome');
+
+  if (!currentUser) return;
+
+  authButtons.style.display = 'none';
+  userInfo.style.display = 'flex';
+  userWelcome.textContent = `👋 Halo, ${currentUser.full_name}!`;
+}
+
+
 window.addEventListener('DOMContentLoaded', () => {
+    initializeAuthState();
     initializeApp();
     initializeSearch();
 });
