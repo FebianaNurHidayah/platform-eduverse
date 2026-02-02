@@ -389,70 +389,49 @@ function showNotification(message, type = 'info') {
 }
 
 async function handleLogin(event) {
-    event.preventDefault();
-    
-    // 1. Ambil data dari input UI
-    // Menggunakan nama variabel 'identifier' agar sesuai dengan logika database baru
-    const identifier = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value.trim();
-    
-    // 2. Validasi Input Sederhana
-    if (!identifier || !password) {
-        showNotification('Silakan lengkapi semua field!', 'error');
-        return;
+  event.preventDefault();
+
+  const identifier = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+
+  if (!identifier || !password) {
+    showNotification('Silakan lengkapi semua field!', 'error');
+    return;
+  }
+
+  const submitBtn = event.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || 'Login gagal');
     }
 
-    // 3. Efek Loading pada Tombol
-    const submitBtn = event.target.querySelector('button[type="submit"]');
-    submitBtn.classList.add('loading');
-    submitBtn.disabled = true;
+    showNotification('Login berhasil!', 'success');
 
-    try {
-        // 1. Panggil API Backend
-        const res = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: emailInput, password: password })
-        });
+    // (opsional) simpan user ke localStorage
+    localStorage.setItem('user', JSON.stringify(data.user));
 
-        const data = await res.json();
+    // redirect
+    setTimeout(() => {
+      window.location.href = '/dashboard.html';
+    }, 800);
 
-        if (!res.ok) {
-            showNotification(data.message || 'Login gagal!', 'error');
-            submitBtn.classList.remove('loading');
-            submitBtn.disabled = false;
-            return;
-        }
-
-        // 2. Jika sukses, set user ke state aplikasi
-        currentUser = data.user.full_name;
-        
-        // Simpan ke localStorage agar tidak logout saat refresh
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
-
-        // 3. Jalankan logika Daily Challenge
-        checkDailyBonus(data.user);
-
-        updateAuthInterface();
-        closeModal();
-        showNotification(`👋 Selamat datang kembali, ${currentUser}!`, 'success');
-        
-        document.getElementById('loginEmail').value = '';
-        document.getElementById('loginPassword').value = '';
-        
-        setTimeout(() => {
-            checkUserClass();
-            showHome();
-        }, 500);
-
-    } catch (error) {
-        console.error("LOGIN_ERROR:", error);
-        showNotification('Gagal terhubung ke server', 'error');
-    } finally {
-        submitBtn.classList.remove('loading');
-        submitBtn.disabled = false;
-    }
+  } catch (err) {
+    showNotification(err.message || 'Gagal terhubung ke server', 'error');
+  } finally {
+    submitBtn.disabled = false;
+  }
 }
+
 
 function checkDailyBonus(user) {
     const today = getCurrentDateString();
@@ -473,84 +452,58 @@ function getCurrentDateString() {
 }
 
 async function handleSignup(event) {
-    event.preventDefault();
-    
-    // 1. Ambil data dari input UI
-    const fullName = document.getElementById('signupName').value.trim();
-    const identifier = document.getElementById('signupEmail').value.trim(); // Ini bisa Email atau No.HP
-    const password = document.getElementById('signupPassword').value.trim();
-    const confirmPassword = document.getElementById('confirmPassword').value.trim();
-    
-    // 2. Validasi Input
-    if (!fullName || !identifier || !password || !confirmPassword) {
-        showNotification('Silakan lengkapi semua field!', 'error');
-        return;
+  event.preventDefault();
+
+  const fullName = document.getElementById('signupName').value.trim();
+  const identifier = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value.trim();
+  const confirmPassword = document.getElementById('confirmPassword').value.trim();
+
+  if (!fullName || !identifier || !password || !confirmPassword) {
+    showNotification('Silakan lengkapi semua field!', 'error');
+    return;
+  }
+
+  if (password.length < 6) {
+    showNotification('Password minimal 6 karakter!', 'error');
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    showNotification('Konfirmasi password tidak cocok!', 'error');
+    return;
+  }
+
+  const submitBtn = event.target.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        full_name: fullName,
+        identifier,
+        password
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || 'Signup gagal');
     }
 
-    if (password.length < 6) {
-        showNotification('Password minimal 6 karakter!', 'error');
-        return;
-    }
+    showNotification('Signup berhasil! Silakan login.', 'success');
+    event.target.reset();
 
-    if (password !== confirmPassword) {
-        showNotification('Konfirmasi password tidak cocok!', 'error');
-        return;
-    }
-
-    // 3. Efek Loading pada Tombol
-    const submitBtn = event.target.querySelector('button[type="submit"]');
-    submitBtn.classList.add('loading');
-    submitBtn.disabled = true;
-
-    try {
-        // Panggil API Backend untuk signup
-        const res = await fetch('/api/auth/signup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                full_name: fullName, 
-                email: emailInput, 
-                password: password 
-            })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-            showNotification(data.message || 'Pendaftaran gagal!', 'error');
-            submitBtn.classList.remove('loading');
-            submitBtn.disabled = false;
-            return;
-        }
-
-        // Jika sukses, set user ke state aplikasi
-        currentUser = data.user.full_name;
-        
-        // Simpan ke localStorage
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
-
-        updateAuthInterface();
-        closeModal();
-        showNotification('🎉 Akun berhasil dibuat! Selamat datang di Eduverse!', 'success');
-        
-        document.getElementById('signupName').value = '';
-        document.getElementById('signupEmail').value = '';
-        document.getElementById('signupPassword').value = '';
-        document.getElementById('confirmPassword').value = '';
-        
-        setTimeout(() => {
-            checkUserClass();
-            showHome();
-        }, 500);
-
-    } catch (error) {
-        console.error("SIGNUP_ERROR:", error);
-        showNotification('Gagal terhubung ke server', 'error');
-    } finally {
-        submitBtn.classList.remove('loading');
-        submitBtn.disabled = false;
-    }
+  } catch (err) {
+    showNotification(err.message || 'Gagal terhubung ke server', 'error');
+  } finally {
+    submitBtn.disabled = false;
+  }
 }
+
 
 // ========================================
 // FUNGSI-FUNGSI PEMILIHAN KELAS
