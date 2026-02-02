@@ -1,22 +1,16 @@
-import { MongoClient } from "mongodb";
-
-const client = new MongoClient(process.env.MONGODB_URI);
+import clientPromise from "../../lib/mongodb";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email dan password wajib" });
-  }
-
   try {
-    await client.connect();
+    const client = await clientPromise;
     const db = client.db("haloediverse");
     const users = db.collection("users");
+
+    const { email, password } = req.body;
 
     const user = await users.findOne({ email, password });
 
@@ -32,9 +26,7 @@ export default async function handler(req, res) {
       }
     });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Server error" });
-  } finally {
-    await client.close();
+    console.error("LOGIN ERROR:", err);
+    return res.status(500).json({ message: "Terjadi kesalahan" });
   }
 }
